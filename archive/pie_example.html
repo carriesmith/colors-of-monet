@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+body {
+  font: 10px sans-serif;
+}
+
+#chart {
+
+}
+
+svg {
+  background-color: lightgrey;
+  padding: 10px 0 0 10px;
+}
+
+.arc {
+  /*stroke: #fff;*/
+}
+
+</style>
+<body>
+
+  <div id="chart"></div>
+
+<script src="//d3js.org/d3.v3.min.js"></script>
+<script>
+
+var radius = 12,
+    padding = 12;
+
+var color = d3.scale.ordinal()
+    .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+
+var arc = d3.svg.arc()
+    .outerRadius(radius)
+    .innerRadius(radius - 9);
+
+var pie = d3.layout.pie()
+    .sort(null)
+    .value(function(d) { return d.population; });
+
+d3.csv("pie_example.csv", function(error, data) {
+  if (error) throw error;
+
+  color.domain(d3.keys(data[0]).filter(function(key) { return key !== "State"; }));
+
+  data.forEach(function(d) {
+    d.ages = color.domain().map(function(name) {
+      return {name: name, population: +d[name]};
+    });
+  });
+
+  var svg = d3.select("#chart").append("svg")
+      .attr("width", 800)
+      .attr("height", 800)
+    .selectAll(".pie")
+      .data(data)
+    .enter().append("g")
+      .attr("transform", function(d){
+        return "translate(" + Math.round(Math.random()*800) + "," + Math.round(Math.random()*800) + ")"})
+      .attr("class", "pie")
+      .attr("width", radius * 2)
+      .attr("height", radius * 2)
+    .append("g")
+      .attr("transform", "translate(" + radius + "," + radius + ")");
+
+  svg.selectAll(".arc")
+      .data(function(d) { 
+        console.log(d.ages)
+        return pie(d.ages); })
+    .enter().append("path")
+      .attr("class", "arc")
+      .attr("d", arc)
+      .style("fill", function(d) { return color(d.data.name); });
+
+});
+
+</script>
